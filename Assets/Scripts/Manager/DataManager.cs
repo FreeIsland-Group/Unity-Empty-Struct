@@ -21,10 +21,9 @@ public class DataManager : MonoBehaviour
     public Alert alert;
     public Confirm confirm;
     public InputConfirm inputConfirm;
-    [NonSerialized] public HeroData heroData;
     [NonSerialized] public SaveData saveData;
     [NonSerialized] public ConfigData configData;
-    [NonSerialized] public GlobalExcel globalExcel;
+    [NonSerialized] public Excel globalExcel;
     public TextAsset jsonFile;
     public GameObject canvas = null;
     [NonSerialized] public int nowVer = 70;
@@ -70,7 +69,7 @@ public class DataManager : MonoBehaviour
             configData.siteURL = "https://api.uiosun.com/";
 #endif
 
-            excel = JsonUtility.FromJson<Excel>(jsonFile.text);
+            var excel = JsonUtility.FromJson<Excel>(jsonFile.text);
             excel.RevertDictionary();
             saveData = new SaveData();
         }
@@ -124,34 +123,24 @@ public class DataManager : MonoBehaviour
                 configData.point = 0;
                 configData.userID = 0;
                 SaveConfig();
-                if (SceneManager.GetActiveScene().name != "Main")
+                if (request.error.Contains("403"))
                 {
-                    SetAlert("登录状态失效",
-                        "请登录一个吧，辛苦啦！\n" +
-                        "\n如果你感觉登录状态失效的特别快，请赶紧告诉我们。\n\n备注：“告诉我们”就能解决问题？谁说的，荒谬，我们只是很擅长拿程序猿祭天。:)", () =>
-                        {
-                            SceneManager.LoadScene("Main");
-                        });
+                    Debug.Log("403 中间件拦截：" + request.error);
+                    var i = JsonConvert.DeserializeObject<ForbiddenMessage>(request.downloadHandler.text);
+                    // SupportManager.instance.SetRemind(i.message);
                 }
-                Debug.Log("401 中间件拦截：" + request.error);
-            }
-            else if (request.error.Contains("403"))
-            {
-                Debug.Log("403 中间件拦截：" + request.error);
-                var i = JsonConvert.DeserializeObject<ForbiddenMessage>(request.downloadHandler.text);
-                SetRemind(i.message);
-            }
-            else if (request.error.Contains("426"))
-            {
-                Debug.Log("426 中间件拦截：" + request.error);
-                SetAlert("该升级啦！", "朋友，快去" + nowChannel + "下载最新版吧，你当前的版本已经不被支持了。");
-            }
-            else
-            {
-                SetAlert("服务器炸啦！", "很沉重的说，服务器报错了：" + request.error + request.downloadHandler.text + "\n请截图告知程序猿哦，大概会有补偿吧——我猜的");
-            }
+                else if (request.error.Contains("426"))
+                {
+                    Debug.Log("426 中间件拦截：" + request.error);
+                    // SupportManager.instance.SetAlert("该升级啦！", "朋友，快去" + nowChannel + "下载最新版吧，你当前的版本已经不被支持了。");
+                }
+                else
+                {
+                    // SupportManager.instance.SetAlert("Booooooom!", "服务器报错了：" + request.error + request.downloadHandler.text + "\n请截图告知程序猿哦");
+                }
 
-            return false;
+                return false;
+            }
         }
 
         return true;
@@ -232,8 +221,7 @@ public class DataManager : MonoBehaviour
         if (turn < 1) return;
 
         turn = 0;
-        saveData.NewDay();
-        heroData.NewDay();
+        saveData.NewTurn();
     }
 
     // 注册每日触发的观察者
@@ -294,7 +282,6 @@ public class DataManager : MonoBehaviour
         jsonData = JsonConvert.SerializeObject(saveData, Formatting.Indented);
         formatter.Serialize(file, jsonData);
         file.Close();
-        instance.heroData.RefreshHeroJob();
 
         Analytics.CustomEvent("SaveInit", new Dictionary<string, object>
         {
@@ -315,17 +302,6 @@ public class DataManager : MonoBehaviour
             saveData = JsonConvert.DeserializeObject<SaveData>((string) formatter.Deserialize(file));
             file.Close();
             saveData.ver = nowVer;
-            if (!saveData.market["fund"].canTrade || saveData.market["fund"].min == 600f)
-            {
-                saveData.market["bread"].UpgradeSave(true, .01f, .15f);
-                saveData.market["wood"].UpgradeSave(true, .01f, .2f);
-                saveData.market["stone"].UpgradeSave(true, .02f, .4f);
-                saveData.market["ore"].UpgradeSave(true, .01f, .3f);
-                saveData.market["iron"].UpgradeSave(true,.08f, 2f);
-                saveData.market["skin"].UpgradeSave(true, 1f, 60f);
-                saveData.market["fund"].UpgradeSave(true, 5f, 30f);
-            }
-            heroData.RefreshHeroJob();
 
             Analytics.CustomEvent("SaveLoad", new Dictionary<string, object>
             {

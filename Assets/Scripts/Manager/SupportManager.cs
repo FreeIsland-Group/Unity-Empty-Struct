@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Prefab;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -9,9 +8,9 @@ public class SupportManager : MonoBehaviour
 {
     public static SupportManager instance = null;
     public GameObject canvas = null;
-    public AlertPanel alert;
-    public ConfirmPanel confirm;
-    public ConfirmPanel inputConfirm;
+    // public Alert alert;
+    // public Confirm confirm;
+    // public InputConfirm inputConfirm;
 
     void Awake()
     {
@@ -28,27 +27,27 @@ public class SupportManager : MonoBehaviour
     }
 
     // 新增一个提醒框
-    public void SetAlert(string titleText, string infoText, Action callback = null)
-    {
-        AlertPanel newAlert = Instantiate(alert, canvas.transform);
-        newAlert.InitText(titleText, infoText, callback);
-    }
+    // public void SetAlert(string titleText, string infoText, Action callback = null)
+    // {
+    //     AlertPanel newAlert = Instantiate(alert, canvas.transform);
+    //     newAlert.InitText(titleText, infoText, callback);
+    // }
 
     // 新增一个选择框
-    public void SetConfirm(string titleText, string infoText, Action sureCallback, Action cancelCallback,
-        string cancelText = "放 弃", string sureText = "确 定")
-    {
-        ConfirmPanel newConfirm = Instantiate(confirm, canvas.transform);
-        newConfirm.InitText(titleText, infoText, sureCallback, cancelCallback);
-    }
+    // public void SetConfirm(string titleText, string infoText, Action sureCallback, Action cancelCallback,
+    //     string cancelText = "放 弃", string sureText = "确 定")
+    // {
+    //     ConfirmPanel newConfirm = Instantiate(confirm, canvas.transform);
+    //     newConfirm.InitText(titleText, infoText, sureCallback, cancelCallback);
+    // }
 
     // 新增一个输入选择框
-    public void SetInputConfirm(string titleText, string infoText, Action<string> sureCallback, Action cancelCallback,
-        string placeholderText = "请输入...", string cancelText = "放 弃", string sureText = "确 定")
-    {
-        InputConfirm newConfirm = Instantiate(inputConfirm, canvas.transform);
-        newConfirm.InitText(titleText, infoText, sureCallback, cancelCallback, placeholderText, cancelText, sureText);
-    }
+    // public void SetInputConfirm(string titleText, string infoText, Action<string> sureCallback, Action cancelCallback,
+    //     string placeholderText = "请输入...", string cancelText = "放 弃", string sureText = "确 定")
+    // {
+    //     InputConfirm newConfirm = Instantiate(inputConfirm, canvas.transform);
+    //     newConfirm.InitText(titleText, infoText, sureCallback, cancelCallback, placeholderText, cancelText, sureText);
+    // }
 
     // 生成姓名
     public Dictionary<string, string> RandomName(int sex = 0, string family = null)
